@@ -93,8 +93,8 @@ class utopiaModel:
         ]
 
         required_config_keys = [
-            "big_bin_diameter_um",
-            "N_sizeBins",
+            
+            
             "vol_algal_cell_m3",
             "spm_density_kg_m3",
             "comp_input_file_name",
@@ -151,8 +151,8 @@ class utopiaModel:
         self.MP_composition = self.data["MP_composition"]
         self.shape = self.data["shape"]
         self.MP_form = self.data["MP_form"]
-        self.big_bin_diameter_um = self.config["big_bin_diameter_um"]
-        self.N_sizeBins = self.config["N_sizeBins"]
+        #self.big_bin_diameter_um = self.config["big_bin_diameter_um"]
+        #self.N_sizeBins = self.config["N_sizeBins"]
         self.FI = self.data["FI"]
         self.t_half_deg_free = self.data["t_half_deg_free"]
         self.t_frag_gen_FreeSurfaceWater = self.data["t_frag_gen_FreeSurfaceWater"]
@@ -196,14 +196,25 @@ class utopiaModel:
         """Generates the microplastics input DataFrame from Utopia model attributes."""
         MPdensity_kg_m3 = self.MPdensity_kg_m3
         shape = self.shape
+        # Number of size bins and sizes are now fixed ando should not be part of the input data files
+        self.N_sizeBins = 5
         N_sizeBins = self.N_sizeBins
-        big_bin_diameter_um = self.big_bin_diameter_um
+        self.size_distribution=[0.3, 3,30,750,15000] # median values of the particle diameter of the size bin in nanometers
+        self.size_distribution_dict={
+            "0.3": "Nanoplastic",
+            "3.0": "< 10 µm",
+            "30.0": "< 100 µm",
+            "750.0": "< 5000 µm",
+            "15000.0": "Mesoplastic",
+        }
+        size_distribution = self.size_distribution
+        #big_bin_diameter_um = self.big_bin_diameter_um
 
         # Generate size distribution
-        size_distribution = [big_bin_diameter_um]
-        for _ in range(N_sizeBins - 1):
-            size_distribution.append(size_distribution[-1] / 10)
-        size_distribution.reverse()
+        # size_distribution = [big_bin_diameter_um]
+        # for _ in range(N_sizeBins - 1):
+        #     size_distribution.append(size_distribution[-1] / 10)
+        # size_distribution.reverse()
 
         # Only supports spherical particles for now
         if shape == "sphere":
@@ -320,3 +331,38 @@ class utopiaModel:
                     print(
                         f"Emissions to {compartment} for size fraction {self.size_dict[fraction]} {chr(181)}m: {value} g/s"
                     )
+    def run_sensitivity_analysis(self, param_distributions, n_simulations=1000, **monaco_kwargs):
+        """
+        Run Monte Carlo sensitivity analysis using monaco.
+        
+        Args:
+            param_distributions (dict): {param_name: distribution_object}
+            n_simulations (int): Number of Monte Carlo runs
+            **monaco_kwargs: Passed to monaco.Simulation
+            
+        Returns:
+            monaco.Simulation: Full results object
+        """
+        from utopia.monte_carlo.analysis import run_monte_carlo
+        from utopia.monte_carlo.distributions import MP_Gaussian, Emission_Uniform  # Your custom distributions
+        
+        # Create a wrapper that preserves model state
+        def model_wrapper(**params):
+            # Create a copy of the model with new params
+            modified_model = self.copy()
+            modified_model.data.update(params)  # Update input data
+            modified_model.run()
+            
+            return {
+                'outputs': modified_model.R,
+                'indicators': modified_model.processed_results
+            }
+        
+        
+        
+        return run_monte_carlo(
+            model_func=model_wrapper,
+            param_distributions=param_distributions,
+            n_simulations=n_simulations,
+            **monaco_kwargs
+        )

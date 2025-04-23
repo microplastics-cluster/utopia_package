@@ -23,7 +23,8 @@ class ResultsProcessor:
     def process_results(self):
         """Reformat results dataframe for easier analysis by specifying size fractions, MP forms and compartments and deriving mass and number fractions, input and outup flows."""
         # Reformat results (R) dataframe
-        self.R["Size_Fraction_um"] = [self.model.size_dict[x[0]] for x in self.R.index]
+        median_size_of_bin=[self.model.size_dict[x[0]] for x in self.R.index]
+        self.R["Size_Fraction_um"] = [self.model.size_distribution_dict[str(x)] for x in median_size_of_bin]
         self.R["MP_Form"] = [
             self.model.MP_form_dict_reverse[x[1]] for x in self.R.index
         ]

@@ -1,7 +1,4 @@
-{
-    "big_bin_diameter_um": 5000,
-    "N_sizeBins": 5,
-    "vol_algal_cell_m3": 2.0e-16,
+{   "vol_algal_cell_m3": 2.0e-16,
     "spm_density_kg_m3": 1388, 
     "boxName": "Utopia",
     "comp_input_file_name": "inputs_compartments.csv",

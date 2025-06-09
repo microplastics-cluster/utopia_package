@@ -4,6 +4,26 @@ Package to run the UTOPIA unit world model to estimate mass and particle distrib
 
 ## Usage
 
+Before installing and testing the package, it is highly recommended to set up a virtual environment, this can be made with conda or venv as follows:
+
+```bash
+$ conda create --name utopia_env python=3.9 -y
+
+```
+Activate the environment:
+
+```bash
+$ conda activate utopia_env
+
+```
+Use poetry to install our package using the command poetry install at the command line from the root package directory:
+
+```bash
+$ poetry install
+
+```
+
+
 Install the model with `pip`:
 
 ```bash

@@ -1,6 +1,6 @@
-from utopia import utopia
-from results_processing.mass_balance_check import *
-from results_processing.process_results import *
+from utopia.utopia import utopiaModel
+from utopia.results_processing.mass_balance_check import *
+from utopia.results_processing.process_results import *
 
 # Create the model, pass it example config and data, then run it
 config_data = utopiaModel.load_json_file("data/default_config.json")

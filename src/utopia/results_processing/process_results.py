@@ -8,6 +8,11 @@ from utopia.preprocessing.fill_interactions_dictionaries import *
 from utopia.results_processing.exposure_indicators_calculation import *
 from utopia.solver_steady_state import *
 from utopia.results_processing.emission_fractions_calculation import *
+from collections import defaultdict
+import json
+import plotly.graph_objects as go
+import colorsys
+
 
 # from utopia.results_processing.pdf_reporting import *
 
@@ -787,6 +792,7 @@ class ResultsProcessor:
         # Calculate exposure indicators
         self.estimate_exposure_indicators()
         self.estimate_emission_fractions()
+        self.plot_flows_diagram()
 
     def estimate_exposure_indicators(self):
         """Estimate overall size dependent exposure indicators"""
@@ -823,3 +829,410 @@ class ResultsProcessor:
     #             pdf.add_text(str(result))
 
     #     pdf.output("results_report.pdf")
+
+    def plot_flows_diagram(self):
+        from_keys = list(self.model.dict_comp.keys())
+        to_keys = [list(x.connexions.keys()) for x in self.model.dict_comp.values()]
+        processess_keys = [
+            list(x.connexions.values()) for x in self.model.dict_comp.values()
+        ]
+        process_values_list = list(self.results_by_comp["outflows_g_s"])
+
+        flows_dict = defaultdict(lambda: defaultdict(dict))
+        for i, from_comp in enumerate(from_keys):
+            process_values = process_values_list[i]
+            for j, to_comp in enumerate(to_keys[i]):
+                processes = processess_keys[i][j]
+                if isinstance(processes, str):
+                    processes = [processes]
+                elif isinstance(processes, list):
+                    flat = []
+                    for p in processes:
+                        flat.extend(p if isinstance(p, list) else [p])
+                    processes = flat
+                for process in processes:
+                    if "k_" + process != "k_discorporation":
+                        val = process_values.get("k_" + process, 0.0)
+                        flows_dict[from_comp][to_comp][process] = val
+
+        def recursive_defaultdict_to_dict(d):
+            if isinstance(d, defaultdict):
+                d = {k: recursive_defaultdict_to_dict(v) for k, v in d.items()}
+            elif isinstance(d, dict):
+                d = {k: recursive_defaultdict_to_dict(v) for k, v in d.items()}
+            return d
+
+        flows_dict_clean = recursive_defaultdict_to_dict(flows_dict)
+
+        source_nodes, target_nodes, flow_values, flow_labels = [], [], [], []
+        for source, targets in flows_dict_clean.items():
+            for target, processes in targets.items():
+                for process, value in processes.items():
+                    if value > 0:
+                        source_nodes.append(source)
+                        target_nodes.append(target)
+                        flow_values.append(value)
+                        flow_labels.append(process)
+
+        all_nodes = sorted(set(source_nodes + target_nodes))
+        node_indices = {name: idx for idx, name in enumerate(all_nodes)}
+        sources = [node_indices[n] for n in source_nodes]
+        targets = [node_indices[n] for n in target_nodes]
+
+        # Clean display labels
+        short_labels = {
+            "Ocean_Surface_Water": "Ocean Surf.",
+            "Ocean_Mixed_Water": "Ocean Mixed",
+            "Ocean_Column_Water": "Ocean Col.",
+            "Sediment_Ocean": "Ocean Sed.",
+            "Coast_Surface_Water": "Coast Surf.",
+            "Coast_Column_Water": "Coast Col.",
+            "Sediment_Coast": "Coast Sed.",
+            "Surface_Freshwater": "Surf. Fresh",
+            "Bulk_Freshwater": "Bulk Fresh",
+            "Sediment_Freshwater": "Fresh Sed.",
+            "Beaches_Soil_Surface": "Beach Soil",
+            "Beaches_Deep_Soil": "Beach Deep",
+            "Background_Soil_Surface": "Bkgd Soil Surf.",
+            "Background_Soil": "Bkgd Soil",
+            "Impacted_Soil_Surface": "Impctd Soil Surf.",
+            "Impacted_Soil": "Impctd Soil",
+            "Air": "Air",
+        }
+
+        # Grid position
+        node_positions = {
+            "Ocean_Surface_Water": (0, 3),
+            "Ocean_Mixed_Water": (0, 2),
+            "Ocean_Column_Water": (0, 1),
+            "Sediment_Ocean": (0, 0),
+            "Coast_Surface_Water": (1, 3),
+            "Coast_Column_Water": (1, 2),
+            "Sediment_Coast": (1, 1),
+            "Surface_Freshwater": (2, 3),
+            "Bulk_Freshwater": (2, 2),
+            "Sediment_Freshwater": (2, 1),
+            "Beaches_Soil_Surface": (3, 3),
+            "Beaches_Deep_Soil": (3, 2),
+            "Background_Soil_Surface": (4, 3),
+            "Background_Soil": (4, 2),
+            "Impacted_Soil_Surface": (5, 3),
+            "Impacted_Soil": (5, 2),
+            "Air": (2, 4),
+        }
+
+        n_cols, n_rows = 6, 5
+        node_x, node_y = [], []
+        for node in all_nodes:
+            col, row = node_positions.get(node, (0, 0))
+            x = (col + 0.5) / n_cols
+            y = 1 - (row + 0.5) / n_rows
+            node_x.append(x)
+            node_y.append(y)
+
+        # Grouped color palette by domain
+        env_colors = {
+            "Ocean": "steelblue",
+            "Coast": "lightseagreen",
+            "Fresh": "mediumseagreen",
+            "Beach": "sandybrown",
+            "Background": "peru",
+            "Impacted": "firebrick",
+            "Air": "gray",
+        }
+
+        def color_by_label(name):
+            for key in env_colors:
+                if key in name:
+                    return env_colors[key]
+            return "lightgray"
+
+        node_colors = [color_by_label(name) for name in all_nodes]
+
+        unique_processes = list(set(flow_labels))
+
+        def generate_colors(n):
+            hls_colors = [(i / n, 0.5, 0.6) for i in range(n)]
+            rgb_colors = [colorsys.hls_to_rgb(*hls) for hls in hls_colors]
+            return [
+                "rgb({},{},{})".format(int(r * 255), int(g * 255), int(b * 255))
+                for r, g, b in rgb_colors
+            ]
+
+        process_color_map = {
+            p: c
+            for p, c in zip(unique_processes, generate_colors(len(unique_processes)))
+        }
+        link_colors = [process_color_map[p] for p in flow_labels]
+
+        # Build figure
+        fig = go.Figure(
+            data=[
+                go.Sankey(
+                    arrangement="fixed",
+                    node=dict(
+                        pad=15,
+                        thickness=20,
+                        line=dict(color="black", width=0.5),
+                        label=[short_labels.get(n, n) for n in all_nodes],
+                        color=node_colors,
+                        x=node_x,
+                        y=node_y,
+                    ),
+                    link=dict(
+                        source=sources,
+                        target=targets,
+                        value=flow_values,
+                        color=link_colors,
+                        hovertemplate="Process: %{label}<br>Flow: %{value:.2f} g/s",
+                        label=flow_labels,
+                    ),
+                )
+            ]
+        )
+
+        fig.update_layout(
+            title_text="Pollutant Flow Between Compartments",
+            font_size=11,
+            height=900,
+            margin=dict(l=20, r=20, t=50, b=20),
+        )
+        fig.show()
+
+        self.dict_flows = flows_dict_clean
+        self.flows_diagram = fig
+
+    def plot_utopia_netFlows(self):
+
+        node_positions = {
+            "Ocean_Surface_Water": (5, 3),
+            "Ocean_Mixed_Water": (5, 2),
+            "Ocean_Column_Water": (5, 1),
+            "Sediment_Ocean": (5, 0),
+            "Coast_Surface_Water": (4, 3),
+            "Coast_Column_Water": (4, 2),
+            "Sediment_Coast": (4, 1),
+            "Surface_Freshwater": (2, 3),
+            "Bulk_Freshwater": (2, 2),
+            "Sediment_Freshwater": (2, 1),
+            "Beaches_Soil_Surface": (3, 3),
+            "Beaches_Deep_Soil": (3, 2),
+            "Background_Soil_Surface": (0, 3),
+            "Background_Soil": (0, 2),
+            "Impacted_Soil_Surface": (1, 3),
+            "Impacted_Soil": (1, 2),
+            "Air": (2, 4),
+        }
+
+        # Extract connections with a total flow value per edge (sum of processes)
+        connections = []
+        for src, targets in self.dict_flows.items():
+            for tgt, processes in targets.items():
+                total_flow = sum(processes.values())
+                connections.append((src, tgt, total_flow))
+
+        box_width = 0.8
+        box_height = 0.5
+
+        # 1. Define compartment groups & colors
+        group_colors = {
+            "Ocean_Surface_Water": "lightblue",
+            "Ocean_Mixed_Water": "lightblue",
+            "Ocean_Column_Water": "lightblue",
+            "Sediment_Ocean": "lightblue",
+            "Coast_Surface_Water": "lightgreen",
+            "Coast_Column_Water": "lightgreen",
+            "Sediment_Coast": "lightgreen",
+            "Surface_Freshwater": "lightcyan",
+            "Bulk_Freshwater": "lightcyan",
+            "Sediment_Freshwater": "lightcyan",
+            "Beaches_Soil_Surface": "tan",
+            "Beaches_Deep_Soil": "tan",
+            "Background_Soil_Surface": "tan",
+            "Background_Soil": "tan",
+            "Impacted_Soil_Surface": "tan",
+            "Impacted_Soil": "tan",
+            "Air": "lightyellow",
+        }
+
+        shapes = []
+        annotations = []
+        arrows = []
+
+        def get_box_edge_point(box_center, other_center, box_width, box_height):
+            """
+            Calculate intersection point on box edge from box_center towards other_center.
+            """
+            x0, y0 = box_center
+            x1, y1 = other_center
+            dx = x1 - x0
+            dy = y1 - y0
+
+            if dx == 0 and dy == 0:
+                return x0, y0  # same point, return center
+
+            hw = box_width / 2
+            hh = box_height / 2
+
+            # Avoid division by zero
+            scale_x = hw / abs(dx) if dx != 0 else float("inf")
+            scale_y = hh / abs(dy) if dy != 0 else float("inf")
+
+            scale = min(scale_x, scale_y)
+
+            edge_x = x0 + dx * scale
+            edge_y = y0 + dy * scale
+
+            return edge_x, edge_y
+
+        # Draw boxes colored by group
+        for name, (col, row) in node_positions.items():
+            x0 = col
+            y0 = row
+            x1 = x0 + box_width
+            y1 = y0 + box_height
+            fillcolor = group_colors.get(name, "lightgrey")
+            shapes.append(
+                dict(
+                    type="rect",
+                    x0=x0,
+                    y0=y0,
+                    x1=x1,
+                    y1=y1,
+                    line=dict(color="black", width=1),
+                    fillcolor=fillcolor,
+                    layer="below",
+                )
+            )
+            annotations.append(
+                dict(
+                    x=(x0 + x1) / 2,
+                    y=(y0 + y1) / 2,
+                    text=name.replace("_", "<br>"),
+                    showarrow=False,
+                    font=dict(size=9),
+                    xanchor="center",
+                    yanchor="middle",
+                )
+            )
+
+        max_flow = max(flow for _, _, flow in connections) if connections else 1
+
+        # Find bidirectional pairs for offsetting arrows
+        bidirectional_pairs = {}
+        for src, tgt, flow in connections:
+            key = frozenset({src, tgt})
+            if key not in bidirectional_pairs:
+                bidirectional_pairs[key] = []
+            bidirectional_pairs[key].append((src, tgt))
+
+        offset_distance = 0.08  # perpendicular offset magnitude
+
+        arrows = []
+        for src, tgt, flow in connections:
+            if src not in node_positions or tgt not in node_positions:
+                continue
+            src_center = (
+                node_positions[src][0] + box_width / 2,
+                node_positions[src][1] + box_height / 2,
+            )
+            tgt_center = (
+                node_positions[tgt][0] + box_width / 2,
+                node_positions[tgt][1] + box_height / 2,
+            )
+
+            start_x, start_y = get_box_edge_point(
+                src_center, tgt_center, box_width, box_height
+            )
+            end_x, end_y = get_box_edge_point(
+                tgt_center, src_center, box_width, box_height
+            )
+
+            # Identify bidirectional pairs
+            pair_key = frozenset({src, tgt})
+            arrows_for_pair = bidirectional_pairs.get(pair_key, [])
+            idx = (
+                arrows_for_pair.index((src, tgt))
+                if (src, tgt) in arrows_for_pair
+                else 0
+            )
+            n_arrows = len(arrows_for_pair)
+
+            # Direction vector from start to end
+            dx = end_x - start_x
+            dy = end_y - start_y
+            length = np.sqrt(dx * dx + dy * dy)
+            if length == 0:
+                perp_dx, perp_dy = 0, 0
+            else:
+                # perpendicular unit vector (rotated 90 degrees CCW)
+                perp_dx = -dy / length
+                perp_dy = dx / length
+
+            # Calculate offset for this arrow in perpendicular direction
+            # Spread arrows evenly around center line:
+            offset = (idx - (n_arrows - 1) / 2) * offset_distance
+
+            start_x_off = start_x + perp_dx * offset
+            start_y_off = start_y + perp_dy * offset
+            end_x_off = end_x + perp_dx * offset
+            end_y_off = end_y + perp_dy * offset
+
+            arrow_width = max(1, 5 * flow / max_flow)
+
+            arrows.append(
+                dict(
+                    ax=start_x_off,
+                    ay=start_y_off,  # tail (start)
+                    x=end_x_off,
+                    y=end_y_off,  # head (end)
+                    xref="x",
+                    yref="y",
+                    axref="x",
+                    ayref="y",
+                    showarrow=True,
+                    arrowhead=3,
+                    arrowsize=1,
+                    arrowwidth=arrow_width,
+                    arrowcolor="black",
+                )
+            )
+
+            # Add flow annotation near midpoint with small offset perpendicular
+            mid_x = (start_x_off + end_x_off) / 2 + perp_dx * 0.05
+            mid_y = (start_y_off + end_y_off) / 2 + perp_dy * 0.05
+            annotations.append(
+                dict(
+                    x=mid_x,
+                    y=mid_y,
+                    text=f"{flow:.1f}",
+                    showarrow=False,
+                    font=dict(size=8, color="black"),
+                    bgcolor="white",
+                    opacity=0.7,
+                    borderpad=1,
+                    xanchor="center",
+                    yanchor="middle",
+                )
+            )
+
+        fig = go.Figure()
+
+        fig.update_layout(
+            shapes=shapes,
+            annotations=annotations + arrows,
+            xaxis=dict(showgrid=False, zeroline=False, visible=False, range=[-0.5, 6]),
+            yaxis=dict(
+                showgrid=False,
+                zeroline=False,
+                visible=False,
+                scaleanchor="x",
+                range=[-0.5, 5],
+            ),
+            height=700,
+            width=1200,
+            margin=dict(l=10, r=10, t=10, b=10),
+            plot_bgcolor="white",
+        )
+
+        fig.show()

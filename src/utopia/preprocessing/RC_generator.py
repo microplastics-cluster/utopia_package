@@ -582,7 +582,7 @@ def sediment_resuspension(particle, model):
     # When no depth parameter available assign transfer sediment to water rate taken from SimpleBox for Plastics model
     # Currently placeholder values. To be revisited
     resusp_dict = {
-        "Sediment_Freshwater": 1e-9,
+        "Sediment_Freshwater": 4.13e-3, # estimated and adjusted from the new parameterization of the Full Multi v3.0
         "Sediment_Coast": 1e-10,
         "Sediment_Ocean": 1e-11,
     }

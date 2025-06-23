@@ -902,22 +902,22 @@ class ResultsProcessor:
 
         # Grid position
         node_positions = {
-            "Ocean_Surface_Water": (0, 3),
-            "Ocean_Mixed_Water": (0, 2),
-            "Ocean_Column_Water": (0, 1),
-            "Sediment_Ocean": (0, 0),
-            "Coast_Surface_Water": (1, 3),
-            "Coast_Column_Water": (1, 2),
-            "Sediment_Coast": (1, 1),
+            "Ocean_Surface_Water": (5, 3),
+            "Ocean_Mixed_Water": (5, 2),
+            "Ocean_Column_Water": (5, 1),
+            "Sediment_Ocean": (5, 0),
+            "Coast_Surface_Water": (4, 3),
+            "Coast_Column_Water": (4, 2),
+            "Sediment_Coast": (4, 1),
             "Surface_Freshwater": (2, 3),
             "Bulk_Freshwater": (2, 2),
             "Sediment_Freshwater": (2, 1),
             "Beaches_Soil_Surface": (3, 3),
             "Beaches_Deep_Soil": (3, 2),
-            "Background_Soil_Surface": (4, 3),
-            "Background_Soil": (4, 2),
-            "Impacted_Soil_Surface": (5, 3),
-            "Impacted_Soil": (5, 2),
+            "Background_Soil_Surface": (0, 3),
+            "Background_Soil": (0, 2),
+            "Impacted_Soil_Surface": (1, 3),
+            "Impacted_Soil": (1, 2),
             "Air": (2, 4),
         }
 

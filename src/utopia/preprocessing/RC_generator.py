@@ -453,24 +453,15 @@ def advective_transport(particle, model):
 
 def mixing(particle, model):
 
-    # Now adapted to UTOPIA's compartments and changed rates
-    # k_mix has to be multiplied by the compartment volume ratio calculated with the interacting compartment volume
+    # Assuming that vertical mixing for the surface of the ocean and the coast is in the 10 hour time scale. The water in the surface will take 60 min to travel 50 m, half way trhough the surface  layer (100m deep). 50m/600min = 0.083 m/min= 0.00139 m/s
 
-    # k_mix_up = (
-    #     10**-2
-    # )  # (1): <Handbook of Chemical Mass Transport in the Environment> Edited by Louis J. Thibodeaux, Donald Mackay (DOI: 10.1201/b10262)
-
-    # k_mix_down = (
-    #     10**-3
-    # )  # (2): <Handbook on Mixing in Rivers> Edited by J.C. Rutherford (Water and Soil Miscellaneous Publication No. 26. 1981. 60pp.ISSN 0110-4705)
-
-    # Assuming that vertical mixing for the surface of the ocean and the coast is in the 1 hour time scale. The water in the surface will take 60 min to travel 50 m, half way trhough the mix layer (100m deep). 50m/60min = 0.83 m/min= 0.0138 m/s
+    #
 
     # FROM OECD tool: ocean water mixing to the depths of hell (Implies residence time in the mixed layer of 100 years, Wania and Mackay GloboPOP Value, Sci Tot Env. 1995) : 1.14 * 10 ^ -4 m/h=3.167E-8 m/s
 
     # Assuming that vertical mixing of freshwater compartments is in the minutes timescale. The water in the surface will take 2 min to travel 5 m, half way trhough the mix layer (10m deep). 2m/5min = 0.4 m/min= 0.0067 m/s
 
-    flowRate_mixUP_ocean_m3_s = 0.0138 * float(
+    flowRate_mixUP_ocean_m3_s = 0.00139 * float(
         model.dict_comp["Ocean_Mixed_Water"].CsurfaceArea_m2
     )
 
@@ -478,7 +469,7 @@ def mixing(particle, model):
         model.dict_comp["Ocean_Mixed_Water"].CsurfaceArea_m2
     )
 
-    flowRate_mix_coast_m3_s = 0.0138 * float(
+    flowRate_mix_coast_m3_s = 0.00139 * float(
         model.dict_comp["Coast_Column_Water"].CsurfaceArea_m2
     )
 
@@ -582,7 +573,7 @@ def sediment_resuspension(particle, model):
     # When no depth parameter available assign transfer sediment to water rate taken from SimpleBox for Plastics model
     # Currently placeholder values. To be revisited
     resusp_dict = {
-        "Sediment_Freshwater": 4.13e-3, # estimated and adjusted from the new parameterization of the Full Multi v3.0
+        "Sediment_Freshwater": 4.13e-3,  # estimated and adjusted from the new parameterization of the Full Multi v3.0
         "Sediment_Coast": 1e-10,
         "Sediment_Ocean": 1e-11,
     }

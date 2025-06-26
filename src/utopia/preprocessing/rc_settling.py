@@ -19,7 +19,7 @@ def calculate_settling_velocity(d_p, rho_p, rho_f, mu, g=9.81):
     """
 
     # Stokes' Law (Re < 0.1, viscous-dominated, d_p < ~100 µm)
-    v_s_stokes = (g * (rho_p - rho_f) * d_p**2) / (18 * mu)
+    v_s_stokes = g * (2 / 9) * ((rho_p - rho_f) / mu) * (d_p**2)
     Re_stokes = (rho_f * v_s_stokes * d_p) / mu  # Calculate Reynolds number
 
     if Re_stokes < 0.1:

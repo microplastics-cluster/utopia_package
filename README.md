@@ -24,7 +24,44 @@ $ poetry install
 ```
 
 
-Install the model with `pip`:
+
+Before installing and testing the package, it is highly recommended to set up a virtual environment, this can be made with conda as follows:
+
+```bash
+$ conda create --name utopia_env python=3.9 -y
+```
+
+Activate the environment:
+
+```bash
+$ conda activate utopia_env
+```
+
+To install Poetry on Windows, run the following command in PowerShell:
+
+```powershell
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+```
+
+After installation, add the Poetry into your PATH:
+
+```bash
+[Environment]::SetEnvironmentVariable("Path", "$env:Path;%USERPROFILE%\.poetry\bin", "User")
+```
+
+Then, restart your terminal and verify the installation:
+
+```bash
+poetry --version
+```
+
+Use poetry to install our package using the command poetry install at the command line from the root package directory:
+
+```bash
+$ poetry install
+```
+
+Install the model with `pip` (not ready? use poetry above):
 
 ```bash
 $ pip install utopia

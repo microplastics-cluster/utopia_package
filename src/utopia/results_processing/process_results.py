@@ -8,7 +8,8 @@ from utopia.preprocessing.fill_interactions_dictionaries import *
 from utopia.results_processing.exposure_indicators_calculation import *
 from utopia.solver_steady_state import *
 from utopia.results_processing.emission_fractions_calculation import *
-#from utopia.results_processing.pdf_reporting import *
+
+# from utopia.results_processing.pdf_reporting import *
 
 
 class ResultsProcessor:
@@ -426,7 +427,7 @@ class ResultsProcessor:
                         ]
 
                         for proc in inpProc:
-                            if proc == "dry_deposition":
+                            if proc == "dry_deposition" or proc == "wet_deposition":
                                 position = self.surfComp_list.index(comp)
                                 df_inflows["k_" + proc] = df_inflows["k_" + proc].apply(
                                     lambda x: x[position] if isinstance(x, list) else x
@@ -714,7 +715,7 @@ class ResultsProcessor:
             "Air": "#deebf7",
         }
 
-        # Add your dataframe sorting and rounding logic
+        # Sort and round the values
         df = (
             self.results_by_comp[["Compartments", mass_or_number]]
             .round(2)
@@ -724,17 +725,42 @@ class ResultsProcessor:
         # Get the list of colors based on the Compartments in the df
         bar_colors = df["Compartments"].map(compartment_colors)
 
-        # Plot the horizontal bar chart
-        plt.barh(
-            df["Compartments"], df[mass_or_number], color=bar_colors
-        )  # Apply specific colors to each bar
-        plt.xlabel(mass_or_number)
-        plt.ylabel("Compartments")
-        plt.title(f"{mass_or_number} Distribution by Compartment")
-        plt.gca().invert_yaxis()  # Invert y-axis to match sorting order
+        # Plot
+        fig, ax = plt.subplots(figsize=(8, len(df) * 0.4))
+        bars = ax.barh(df["Compartments"], df[mass_or_number], color=bar_colors)
+
+        # Fix x-axis to 100%
+        ax.set_xlim(0, 100)
+
+        # Add labels to bars
+        for bar in bars:
+            width = bar.get_width()
+            ax.text(
+                width + 1, bar.get_y() + bar.get_height() / 2, f"{width}%", va="center"
+            )
+
+        # Labels and formatting
+        ax.set_xlabel(mass_or_number)
+        ax.set_ylabel("Compartments")
+        ax.set_title(f"{mass_or_number} Distribution by Compartment")
+        ax.invert_yaxis()  # To match sorting order
+
+        plt.tight_layout()
         plt.show()
-        fig = plt.gcf()
+
         return fig
+
+        # # Plot the horizontal bar chart
+        # plt.barh(
+        #     df["Compartments"], df[mass_or_number], color=bar_colors
+        # )  # Apply specific colors to each bar
+        # plt.xlabel(mass_or_number)
+        # plt.ylabel("Compartments")
+        # plt.title(f"{mass_or_number} Distribution by Compartment")
+        # plt.gca().invert_yaxis()  # Invert y-axis to match sorting order
+        # plt.show()
+        # fig = plt.gcf()
+        # return fig
 
     def process_all(self):
         """Runs all processing steps in order automatically and stores the results in the processed_results dictionary of the the class."""

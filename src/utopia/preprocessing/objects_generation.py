@@ -24,17 +24,16 @@ def generate_objects(model):
 
     # Compartmets
     """Call read imput file function for compartments"""
-    #base_path = Path(__file__).resolve().parent / "data"
-    inputs_path_file = model.base_path /model.comp_input_file_name
-    
-    
+    # base_path = Path(__file__).resolve().parent / "data"
+    inputs_path_file = model.base_path / model.comp_input_file_name
+
     # inputs_path_file = f"data/{model.comp_input_file_name}"
     compartments = instantiate_compartments(
         inputs_path_file=inputs_path_file, compartment_types=model.compartment_types
     )
 
     # Establish connexions between compartments defining their interaction mechanism: only listed those compartments wich will recieve particles from the define compartment. i.e. the ocean surface water compartment transports particles to the ocean mix layer through settling and to air through sea spray resuspension
-    connexions_path_file = model.base_path/model.comp_interactFile_name
+    connexions_path_file = model.base_path / model.comp_interactFile_name
     set_interactions(compartments, connexions_path_file)
 
     # Assign modelling code to compartments

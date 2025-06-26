@@ -1,10 +1,10 @@
 {
-    "MPdensity_kg_m3": 1000,
-    "MP_composition": "PA",
+    "MPdensity_kg_m3": 1580,
+    "MP_composition": "PVC",
     "shape": "sphere",
     "MP_form": "freeMP",
-    "FI": 0.7,
-    "t_half_deg_free": 66000,
+    "FI": 0.5,
+    "t_half_deg_free": 4584,
     "heter_deg_factor": 10,
     "biof_deg_factor": 0.5,
     "factor_deepWater_soilSurface": 10,
@@ -18,7 +18,7 @@
             "b": 0,
             "c": 0,
             "d": 0,
-            "e": 250000
+            "e": 100
         },
         "Ocean_Mixed_Water": {
             "a": 0,

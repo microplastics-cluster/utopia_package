@@ -107,7 +107,7 @@ class utopiaModel:
 
         self.check_required_keys(data, required_data_keys, "data")
         self.check_required_keys(config, required_config_keys, "config")
-        
+
         # Type and value checks
         if not isinstance(data["MPdensity_kg_m3"], (int, float)):
             raise TypeError("MPdensity_kg_m3 must be a number.")
@@ -117,7 +117,6 @@ class utopiaModel:
 
     # Add more checks as needed (TO BE ADDED!)
 
-    
     def modify_and_save_data(self, data, modifications, filename):
         """
         Modify the provided data dictionary with the given modifications and save to a JSON file.
@@ -136,13 +135,13 @@ class utopiaModel:
 
         # Save the modified data
         self.save_json_file(data, filename)
-    
+
     def save_json_file(self, data, filename):
         output_path = self.base_path / filename
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
         print(f"Modified data saved to {output_path}")
-    
+
     def load_parameters(self):
         """Loads required parameters from config and data dictionaries."""
 

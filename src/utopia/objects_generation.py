@@ -2,7 +2,7 @@
 
 import math
 
-from helpers.globalConstants import *
+from utopia.globalConstants import *
 
 
 class Box:

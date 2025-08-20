@@ -52,15 +52,31 @@ def dragCoefficient(d, rho, Rep):
     # Rep = 13.35
     Cd = np.zeros_like(Rep)
 
-    Cd[Rep <= 1] = 24.0 / Rep[Rep <= 1]
-    Cd[(1 < Rep) & (Rep <= 1000.0)] = (
-        24.0 / Rep[(1 < Rep) & (Rep <= 750.0)]
-        + 5.0 / np.power(Rep[(1 < Rep) & (Rep <= 750.0)], 0.6)
-        + 0.44
-    )
-    Cd[(1000.0 < Rep) & (Rep <= 2.0e5)] = 0.44
-    Cd[Rep >= 2.0e5] = 0.10
+    # Cd[Rep <= 1] = 24.0 / Rep[Rep <= 1]
+    # Cd[(1 < Rep) & (Rep <= 1000.0)] = (
+    #     24.0 / Rep[(1 < Rep) & (Rep <= 750.0)]
+    #     + 5.0 / np.power(Rep[(1 < Rep) & (Rep <= 750.0)], 0.6)
+    #     + 0.44
+    # )
+    # Cd[(1000.0 < Rep) & (Rep <= 2.0e5)] = 0.44
+    # Cd[Rep >= 2.0e5] = 0.10
 
+    Rep_conditions = [
+        Rep <= 1,
+        (1 < Rep) & (Rep <= 1000.0),
+        (1000.0 < Rep) & (Rep <= 2.0e5),
+        Rep > 2.0e5,
+    ]
+
+    Cd_functions = [
+        lambda x: 24.0 / x,
+        lambda x: 24.0 / x + 5.0 / np.power(x, 0.6) + 0.44,
+        0.44,
+        0.10,
+    ]
+
+    Cd = np.piecewise(Rep, Rep_conditions, Cd_functions)
+    
     # Cd = 24.0 * (1.0 + (0.15 * Rep**0.687)) / Rep
     # Cd = Cd + 0.42 / (1.0 + (42500.0/ (Rep**1.16)))
     return Cd

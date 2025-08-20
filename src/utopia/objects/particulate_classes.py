@@ -31,9 +31,20 @@ class Particulates:
         self.PdimensionY_m = PdimensionY_um / 1000000  # longest size
         self.PdimensionZ_m = PdimensionZ_um / 1000000  # intermediate size
         self.Pnumber_t0 = Pnumber_t0  # number of particles at time 0. to be objetained from emissions and background concentration of the compartment
-        self.radius_m = (
-            self.PdimensionX_um / 1e6
-        )  # In spherical particles from MP radius (x dimension)
+        
+        # extract radius (for spherical particles) or calculate equivalent radius (for fibers)
+        if self.Pshape == "sphere":
+            self.radius_m = (
+                self.PdimensionX_m / 2
+            )  # In spherical particles from MP radius (x dimension)
+        elif self.Pshape in {"fiber", "fibre", "cylinder"}:
+            self.radius_m = (
+                (3 / 2) * self.PdimensionX_m * self.PdimensionY_m * self.PdimensionZ_m
+            ) ** (1 / 3) / 2
+        else:
+            print("Error: shape not supported yet")
+            # print error message for shapes other than spheres
+            
         self.diameter_m = self.radius_m * 2
         self.diameter_um = self.diameter_m * 1e6
         self.Pemiss_t_y = 0  # set as 0
@@ -77,10 +88,10 @@ class Particulates:
             or self.Pshape == "fiber"
             or self.Pshape == "cylinder"
         ):
-            self.Pvolume_m3 = math.pi * (self.radius_m) ** 2 * (self.PdimensionY_m)
+            self.Pvolume_m3 = math.pi * (self.PdimensionX_m) ** 2 * (self.PdimensionY_m)
             # calculates volume (in m3) of fibres or cylinders from diameter and
             # length assuming cylindrical shape where X is the shorterst size (radius) ans Y the longest (heigth)
-            self.CSF = (self.radius_m) / math.sqrt(self.PdimensionY_m * self.radius_m)
+            self.CSF = (self.PdimensionX_m) / math.sqrt(self.PdimensionY_m * self.PdimensionZ_m)
             # calculate corey shape factor (CSF)
             # (Waldschlaeger 2019, doi:10.1021/acs.est.8b06794)
             # print(
@@ -214,6 +225,26 @@ class ParticulatesSPM(Particulates):
         self.Pshape = (
             parentMP.Pshape
         )  # to be updated for biofilm, could argue that shape is retained (unlike for SPM-bound)
+        
+        # add dimensions
+        if parentMP.PdimensionY_um == 0:
+            self.PdimensionY_um = 0
+        else:
+            self.PdimensionY_um = parentMP.PdimensionY_um + parentSPM.diameter_um
+
+        if parentMP.PdimensionZ_um == 0:
+            self.PdimensionZ_um = 0
+        else:
+            self.PdimensionZ_um = parentMP.PdimensionZ_um + parentSPM.diameter_um
+
+        if parentMP.PdimensionX_um == 0:
+            self.PdimensionX_um = 0
+        else:
+            self.PdimensionX_um = parentMP.PdimensionX_um + parentSPM.diameter_um
+            
+        self.PdimensionX_m = self.PdimensionX_um / 1000000  # shortest size
+        self.PdimensionY_m = self.PdimensionY_um / 1000000  # longest size
+        self.PdimensionZ_m = self.PdimensionZ_um / 1000000  # intermediate size
 
     # methods
 

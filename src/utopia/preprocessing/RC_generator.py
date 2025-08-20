@@ -169,10 +169,11 @@ def settling(particle, model):
     # settlingMethod = "Stokes"
 
     vSet_m_s = calculate_settling_velocity(
-        d_p=particle.diameter_um * 1e-6,
+        particle=particle, 
+        d_p=particle.diameter_m, 
         rho_p=particle.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
         g=g_m_s2,
     )
 
@@ -248,10 +249,11 @@ def rising(particle, model):
             w_den_kg_m3 = density_seaWater_kg_m3
 
         vrise_m_s = calculate_settling_velocity(
-            d_p=particle.diameter_um * 1e-6,
+            particle=particle, 
+            d_p=particle.diameter_m,
             rho_p=particle.Pdensity_kg_m3,
             rho_f=w_den_kg_m3,
-            mu=mu_w_21C_mPas,
+            mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
             g=g_m_s2,
         )
 
@@ -312,18 +314,20 @@ def heteroaggregation(particle, model):
         w_den_kg_m3 = density_seaWater_kg_m3
 
     MP_vSet_m_s = calculate_settling_velocity(
-        d_p=particle.diameter_um * 1e-6,
+        particle=particle, 
+        d_p=particle.diameter_m,
         rho_p=particle.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
         g=g_m_s2,
     )
 
     SPM_vSet_m_s = calculate_settling_velocity(
+        particle=model.spm, 
         d_p=model.spm.radius_m * 2,
         rho_p=model.spm.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
         g=g_m_s2,
     )
 
@@ -391,18 +395,20 @@ def heteroaggregate_breackup(particle, model):
         w_den_kg_m3 = density_seaWater_kg_m3
 
     MP_vSet_m_s = calculate_settling_velocity(
-        d_p=particle.diameter_um * 1e-6,
+        particle=particle, 
+        d_p=particle.diameter_m,
         rho_p=particle.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
         g=g_m_s2,
     )
 
     SPM_vSet_m_s = calculate_settling_velocity(
+        particle=model.spm,
         d_p=model.spm.radius_m * 2,
         rho_p=model.spm.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
         g=g_m_s2,
     )
 
@@ -621,10 +627,11 @@ def burial(particle, model):
     if particle.Pcompartment.Cname in resusp_dict:
 
         vSet_m_s = calculate_settling_velocity(
-            d_p=particle.diameter_um * 1e-6,
+            particle=particle, 
+            d_p=particle.diameter_m,
             rho_p=particle.Pdensity_kg_m3,
             rho_f=w_den_kg_m3,
-            mu=mu_w_21C_mPas,
+            mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
             g=g_m_s2,
         )
         
@@ -781,20 +788,25 @@ def dry_deposition(particle, model):
     # Dry deposition is shape and size dependent:
 
     if particle.Pshape == "sphere":
-
-        # Example usage
         d = particle.diameter_m
-        rho = particle.Pdensity_kg_m3
-        Rep = ReynoldsNumberFromStokes(d, rho)
+    
+    elif particle.Pshape == "fiber" or "fibre" or "cylinder":
+        d = particle.diameter_m
+        #NOTE: 250722 XZ revised the equivalent diameter for fiber-shaped particles in particulate_classes.py
+        # d = (3 * particle.Pvolume_m3 / (4 * math.pi)) ** (1 / 3) * 2
+    
+    rho = particle.Pdensity_kg_m3
+    Rep = ReynoldsNumberFromStokes(d, rho)
 
-        initial_Rep = ReynoldsNumberFromStokes(d, rho)
-        initial_Settling = kineticCstdrySettlingNewtonSphere(
-            d, rho, Rep
-        )  # Initial guess for settling velocity
-        settling_velocity = get_settling(initial_Settling, d, rho, initial_Rep)
-        # print("Final settling velocity:", settling_velocity, ReynoldsNumberFromVg(d, rho, settling_velocity))
+    initial_Rep = ReynoldsNumberFromStokes(d, rho)
+    
+    initial_Settling = kineticCstdrySettlingNewtonSphere(
+        d, rho, Rep
+    )  # Initial guess for settling velocity
+    settling_velocity = get_settling(initial_Settling, d, rho, initial_Rep)
+    # print("Final settling velocity:", settling_velocity, ReynoldsNumberFromVg(d, rho, settling_velocity))
 
-        v_dd = settling_velocity
+    v_dd = settling_velocity
 
     #     if particle.diameter_um <= 17:
     #         # For particles < 16.7 um we use Brownian regime to describe settling velocity

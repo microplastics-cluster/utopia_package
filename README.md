@@ -1,6 +1,6 @@
 # utopia
 
-Package to run the UTOPIA unit world model to estimate mass and particle distribution of microplastics in a unit world model composed of 17 compartments covering air, water, soil and sediments. Results are given for 5 size fractions ranging from hundreds of nanometers to milimiters and 4 aggregation states. Exposure indicators such as persistence and characteristic travel distance are also given as outputs.
+Package to run the UTOPIA unit world model to estimate mass and particle distribution of microplastics in a unit world model composed of 17 compartments covering air, water, soil and sediments. Results are given for 5 size fractions ranging from hundreds of nanometers to milimiters and 4 aggregation states. Exposure indicators such as overall persistence and residence time are also given as outputs.
 
 ## Usage
 

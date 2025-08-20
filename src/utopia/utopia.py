@@ -93,8 +93,6 @@ class utopiaModel:
         ]
 
         required_config_keys = [
-            
-            
             "vol_algal_cell_m3",
             "spm_density_kg_m3",
             "comp_input_file_name",
@@ -150,8 +148,41 @@ class utopiaModel:
         self.MP_composition = self.data["MP_composition"]
         self.shape = self.data["shape"]
         self.MP_form = self.data["MP_form"]
-        #self.big_bin_diameter_um = self.config["big_bin_diameter_um"]
-        #self.N_sizeBins = self.config["N_sizeBins"]
+        self.big_bin_diameter_um = self.config["big_bin_diameter_um"]
+
+        # Set dimensions based on shape
+        if self.shape == "sphere":
+            self.dimensionX_um = self.config["big_bin_diameter_um"]
+            self.dimensionY_um = self.config["big_bin_diameter_um"]
+            self.dimensionZ_um = self.config["big_bin_diameter_um"]
+
+        elif self.shape in {"fiber", "fibre", "cylinder"}:
+            if all(
+                k not in self.config
+                for k in ["dimensionX_um", "dimensionY_um", "dimensionZ_um"]
+            ):
+                self.dimensionX_um = self.config["big_bin_diameter_um"] / 2
+                self.dimensionY_um = self.config["big_bin_diameter_um"]
+                self.dimensionZ_um = self.config["big_bin_diameter_um"] / 2
+            else:
+                self.dimensionX_um = self.config["dimensionX_um"]
+                self.dimensionY_um = self.config["dimensionY_um"]
+                self.dimensionZ_um = self.config["dimensionZ_um"]
+
+        else:
+            if all(
+                k in self.config
+                for k in ["dimensionX_um", "dimensionY_um", "dimensionZ_um"]
+            ):
+                self.dimensionX_um = self.config["dimensionX_um"]
+                self.dimensionY_um = self.config["dimensionY_um"]
+                self.dimensionZ_um = self.config["dimensionZ_um"]
+            else:
+                raise ValueError(
+                    f"Dimensions not configured for shape '{self.shape}'. Please provide 'dimensionX_um', 'dimensionY_um', and 'dimensionZ_um'."
+                )
+
+        self.N_sizeBins = self.config["N_sizeBins"]
         self.FI = self.data["FI"]
         self.t_half_deg_free = self.data["t_half_deg_free"]
         self.t_frag_gen_FreeSurfaceWater = self.data["t_frag_gen_FreeSurfaceWater"]
@@ -198,8 +229,14 @@ class utopiaModel:
         # Number of size bins and sizes are now fixed ando should not be part of the input data files
         self.N_sizeBins = 5
         N_sizeBins = self.N_sizeBins
-        self.size_distribution=[0.3, 3,30,750,15000] # median values of the particle diameter of the size bin in nanometers
-        self.size_distribution_dict={
+        self.size_distribution = [
+            0.3,
+            3,
+            30,
+            750,
+            15000,
+        ]  # median values of the particle diameter of the size bin in nanometers
+        self.size_distribution_dict = {
             "0.3": "Nanoplastic",
             "3.0": "< 10 µm",
             "30.0": "< 100 µm",
@@ -207,7 +244,7 @@ class utopiaModel:
             "15000.0": "Mesoplastic",
         }
         size_distribution = self.size_distribution
-        #big_bin_diameter_um = self.big_bin_diameter_um
+        # big_bin_diameter_um = self.big_bin_diameter_um
 
         # Generate size distribution
         # size_distribution = [big_bin_diameter_um]
@@ -223,8 +260,27 @@ class utopiaModel:
                 "shape": [shape] * N_sizeBins,
                 "composition": [self.MP_composition] * N_sizeBins,
                 "density_kg_m3": [MPdensity_kg_m3] * N_sizeBins,
+                "dimensionX_um": [d for d in size_distribution],
+                "dimensionY_um": [d for d in size_distribution],
+                "dimensionZ_um": [d for d in size_distribution],
+            }
+            return pd.DataFrame(data)
+
+        elif shape == "fiber" or "fibre" or "cylinder":
+            # NOTE: # PdimensionX_m -- shortest size
+            # PdimensionY_m -- longest size
+            # PdimensionZ_m -- intermediate size
+            # temporarily defined dimensionY_um as the size distribution
+            # from 5000 um to 500 nm, the diameter is from 2500 um to 250 nm.
+            # (based on datasets provided by 10.1016/j.envres.2023.115783)
+            data = {
+                "Name": [f"mp{i+1}" for i in range(N_sizeBins)],
+                "form": ["freeMP"] * N_sizeBins,
+                "shape": [shape] * N_sizeBins,
+                "composition": [self.MP_composition] * N_sizeBins,
+                "density_kg_m3": [MPdensity_kg_m3] * N_sizeBins,
                 "dimensionX_um": [d / 2 for d in size_distribution],
-                "dimensionY_um": [d / 2 for d in size_distribution],
+                "dimensionY_um": [d for d in size_distribution],
                 "dimensionZ_um": [d / 2 for d in size_distribution],
             }
             return pd.DataFrame(data)
@@ -238,7 +294,7 @@ class utopiaModel:
 
         # Dictionary mapping particle names to sizes
         self.dict_size_coding = dict(
-            zip(self.particles_df["Name"], self.particles_df["dimensionX_um"] * 2)
+            zip(self.particles_df["Name"], self.particles_df["dimensionY_um"])
         )
 
         # Generate size codes (a-z based on number of bins)
@@ -267,7 +323,7 @@ class utopiaModel:
     def run(self):
         """Runs the UTOPIA model with the configured parameters."""
         # Generate model objects based on model configuration and input data
-        print("Running UTOPIA model with configured parameters...")
+        # print("Running UTOPIA model with configured parameters...")
         (
             self.system_particle_object_list,
             self.SpeciesList,
@@ -275,11 +331,11 @@ class utopiaModel:
             self.dict_comp,
             self.particles_properties_df,
         ) = generate_objects(self)
-        print("Generated model objects.")
+        # print("Generated model objects.")
 
         # Estimate rate contants for all processess for each particle in the system
         generate_rate_constants(self)
-        print("Generated rate constants for model particles.")
+        # print("Generated rate constants for model particles.")
 
         # Build matrix of interactions
         self.interactions_df = fillInteractions_fun_OOP(
@@ -287,14 +343,14 @@ class utopiaModel:
             SpeciesList=self.SpeciesList,
             dict_comp=self.dict_comp,
         )
-        print("Built matrix of interactions.")
+        # print("Built matrix of interactions.")
         # Solve system of ODEs
         if self.solver == "SteadyState":
 
             (self.R, self.PartMass_t0, self.input_flows_g_s, self.input_flows_num_s) = (
                 solver_SS(self)
             )
-            print("Solved system of ODEs for steady state.")
+            # print("Solved system of ODEs for steady state.")
         else:
             raise ValueError("Solver not implemented yet")
 
@@ -330,38 +386,42 @@ class utopiaModel:
                     print(
                         f"Emissions to {compartment} for size fraction {self.size_dict[fraction]} {chr(181)}m: {value} g/s"
                     )
-    def run_sensitivity_analysis(self, param_distributions, n_simulations=1000, **monaco_kwargs):
+
+    def run_sensitivity_analysis(
+        self, param_distributions, n_simulations=1000, **monaco_kwargs
+    ):
         """
         Run Monte Carlo sensitivity analysis using monaco.
-        
+
         Args:
             param_distributions (dict): {param_name: distribution_object}
             n_simulations (int): Number of Monte Carlo runs
             **monaco_kwargs: Passed to monaco.Simulation
-            
+
         Returns:
             monaco.Simulation: Full results object
         """
         from utopia.monte_carlo.analysis import run_monte_carlo
-        from utopia.monte_carlo.distributions import MP_Gaussian, Emission_Uniform  # Your custom distributions
-        
+        from utopia.monte_carlo.distributions import (
+            MP_Gaussian,
+            Emission_Uniform,
+        )  # Your custom distributions
+
         # Create a wrapper that preserves model state
         def model_wrapper(**params):
             # Create a copy of the model with new params
             modified_model = self.copy()
             modified_model.data.update(params)  # Update input data
             modified_model.run()
-            
+
             return {
-                'outputs': modified_model.R,
-                'indicators': modified_model.processed_results
+                "outputs": modified_model.R,
+                "indicators": modified_model.processed_results,
             }
-        
-        
-        
+
         return run_monte_carlo(
             model_func=model_wrapper,
             param_distributions=param_distributions,
             n_simulations=n_simulations,
-            **monaco_kwargs
+            **monaco_kwargs,
         )

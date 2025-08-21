@@ -27,15 +27,6 @@ def calculate_settling_velocity(particle, d_p, rho_p, rho_f, mu, g=9.81):
         if Re_stokes < 0.1:
             return v_s_stokes  # , "Stokes' Law (laminar flow)"
 
-    # Intermediate regime (0.1 < Re < 1000)
-    # Iterative approach to solve for velocity since Cd depends on Re
-    v_s = v_s_stokes  # Initial guess
-    for _ in range(10):  # Iterate for better accuracy
-        Re = (rho_f * v_s * d_p) / mu
-        Cd = (24 / Re) * (
-            1 + 0.15 * Re**0.687
-        )  # Empirical drag coefficient (empirical Schiller–Naumann correlation)
-        v_s = math.sqrt((4 * g * d_p * (rho_p - rho_f)) / (3 * Cd * rho_f))
         # Intermediate regime (0.1 < Re < 1000)
         # Iterative approach to solve for velocity since Cd depends on Re
         v_s = v_s_stokes  # Initial guess

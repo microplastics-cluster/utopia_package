@@ -78,7 +78,7 @@ def generate_objects(model):
         Pcomposition="Mixed",
         Pdensity_kg_m3=model.spm_density_kg_m3,
         Pshape="sphere",
-        PdimensionX_um=model.spm_radius_um,
+        PdimensionX_um=model.spm_radius_um*2,
         PdimensionY_um=0,
         PdimensionZ_um=0,
     )

@@ -1,7 +1,7 @@
 {
     "MPdensity_kg_m3": 1580,
     "MP_composition": "PVC",
-    "shape": "sphere",
+    "shape": "fiber",
     "MP_form": "freeMP",
     "FI": 0.5,
     "t_half_deg_free": 4584,

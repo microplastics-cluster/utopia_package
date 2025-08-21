@@ -608,8 +608,8 @@ def burial(particle, model):
     
     resusp_dict = {
         "Sediment_Freshwater": 1e-9,
-        "Sediment_Coast": 1e-10,
-        "Sediment_Ocean": 1e-11,
+        # "Sediment_Coast": 1e-10,
+        # "Sediment_Ocean": 1e-11,
     }
     
     sediment_to_water = {
@@ -650,6 +650,12 @@ def burial(particle, model):
         
         if k_burial < 0:
             k_burial = 0
+    
+    elif particle.Pcompartment.Cname == "Sediment_Coast":
+        k_burial = 1e-9 # assign burial rate taken from SimpleBox for Plastics model
+    
+    elif particle.Pcompartment.Cname == "Sediment_Ocean":
+        k_burial = 5e-10 # assign burial rate taken from SimpleBox for Plastics model
 
     else:
         k_burial = 0

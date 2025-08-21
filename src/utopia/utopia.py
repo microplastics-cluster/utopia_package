@@ -161,9 +161,9 @@ class utopiaModel:
                 k not in self.config
                 for k in ["dimensionX_um", "dimensionY_um", "dimensionZ_um"]
             ):
-                self.dimensionX_um = self.config["big_bin_diameter_um"] / 2
+                self.dimensionX_um = self.config["big_bin_diameter_um"] / 10
                 self.dimensionY_um = self.config["big_bin_diameter_um"]
-                self.dimensionZ_um = self.config["big_bin_diameter_um"] / 2
+                self.dimensionZ_um = self.config["big_bin_diameter_um"] / 10
             else:
                 self.dimensionX_um = self.config["dimensionX_um"]
                 self.dimensionY_um = self.config["dimensionY_um"]
@@ -279,9 +279,9 @@ class utopiaModel:
                 "shape": [shape] * N_sizeBins,
                 "composition": [self.MP_composition] * N_sizeBins,
                 "density_kg_m3": [MPdensity_kg_m3] * N_sizeBins,
-                "dimensionX_um": [d / 2 for d in size_distribution],
+                "dimensionX_um": [d / 10 for d in size_distribution],
                 "dimensionY_um": [d for d in size_distribution],
-                "dimensionZ_um": [d / 2 for d in size_distribution],
+                "dimensionZ_um": [d / 10 for d in size_distribution],
             }
             return pd.DataFrame(data)
         else:

@@ -90,8 +90,8 @@ If the new process sub-model is not a transport process, this step can be skippe
 
 If a new input parameter is required, it must be added in the configuration and data input files needed to run the model. The parameter should also be added as an attribute to the particle object and included in the UTOPIAModel class validation functions.
 
-- Add input to config_data.json as a new entry.
+- Add input to [custom_data.json](src\utopia\data\custom_data.json) as a new entry.
 
-- Assign the new attribute in the particle object class.
+- Assign the new attribute in the [particle object class](src\utopia\objects\particulate_classes.py).
 
-- Add the new entry to the class validation function.
+- Add the new entry to the class validation function under the [UTOPIAmodel class](src\utopia\utopia.py).

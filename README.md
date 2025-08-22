@@ -80,6 +80,8 @@ pd.DataFrame(processor.processed_results["emission_fractions_mass_data"])
 
 Interested in contributing? Check out the contributing guidelines. Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
 
+To add new model sub-processes or modeify the stablished ones check out the [standard procedure file for process submodel integration](SOP_sub_model_integration.md)
+
 ## License
 
 `utopia` was created by Prado Domercq. It is licensed under the terms of the MIT license.

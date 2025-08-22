@@ -1,7 +1,6 @@
 # Standardized Procedure for Integration of Sub-Models into UTOPIA  
 
-UTOPIA currently integrates **21 sub-process models** described in  
-`src/utopia/preprocessing/RC_generator.py`.  
+UTOPIA currently integrates **21 sub-process models** described in [RC_generator.py](src/utopia/preprocessing/RC_generator.py)  
 
 For each of these processes, UTOPIA derives sub-process rate constants for each model compartment, size fraction, and aggregation state combination (**17 × 5 × 4 = 340**).  
 
@@ -32,7 +31,7 @@ Go through the checklist to ensure you have all information needed:
 ## STEP 2: Generate a New Entry for the Model Sub-Process  
 
 Create a new entry in  
-`src/utopia/preprocessing/RC_generator.py`  
+[RC_generator.py](src/utopia/preprocessing/RC_generator.py)
 following this template:  
 
 ```python
@@ -55,7 +54,7 @@ def new_process_name(particle):
 
 Any new process defined in the model has to be assigned to the compartment(s) where it takes place.
 This is done by adding the process name to the list of processes of the sub-compartment class in
-compartment_clases.py (under the object folder).
+[compartment_clases.py](src\utopia\objects\compartment_classes.py)
 
 Example:
 
@@ -83,7 +82,7 @@ class compartment_deep_soil(Compartment):
 ```
 ## STEP 4: Update the Compartment Interactions Matrix
 
-Include the process in the `compartment_interactions.csv` file.
+Include the process in the [compartment_interactions.csv](src\utopia\data\compartment_interactions.csv) file.
 This file specifies the interactions between compartments and is limited to transport processes.
 If the new process sub-model is not a transport process, this step can be skipped.
 

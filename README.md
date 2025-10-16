@@ -1,6 +1,6 @@
-# utopia
+# Utopia
 
-Package to run the UTOPIA unit world model to estimate mass and particle distribution of microplastics in a unit world model composed of 17 compartments covering air, water, soil and sediments. Results are given for 5 size fractions ranging from hundreds of nanometers to milimiters and 4 aggregation states. Exposure indicators such as overall persistence and residence time are also given as outputs.
+Utopia is a process based mass balance unit world model for microplastics. Utopia estimates mass and particle number distributions of microplastics in a unit world model composed of 17 compartments covering air, water, soil and sediments upon selection of an emission scenario. Results are given at steady state for 5 size fractions ranging from hundreds of nanometers to milimiters and 4 aggregation states. Exposure indicators such as overall persistence and residence time are also given as outputs.
 
 ## Usage
 
@@ -79,6 +79,8 @@ pd.DataFrame(processor.processed_results["emission_fractions_mass_data"])
 ## Contributing
 
 Interested in contributing? Check out the contributing guidelines. Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
+
+To add new model sub-processes or modeify the stablished ones check out the [standard procedure file for process submodel integration](SOP_sub_model_integration.md)
 
 ## License
 

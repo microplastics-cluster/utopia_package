@@ -1,15 +1,15 @@
 {
     "MPdensity_kg_m3": 1580,
-    "MP_composition": "PVC",
-    "shape": "fiber",
+    "MP_composition": "HDP",
+    "shape": "sphere",
     "MP_form": "freeMP",
-    "FI": 0.5,
-    "t_half_deg_free": 4584,
+    "FI": 0.8,
+    "t_half_deg_free": 4000,
     "heter_deg_factor": 10,
     "biof_deg_factor": 0.5,
     "factor_deepWater_soilSurface": 10,
     "factor_sediment": 100,
-    "t_frag_gen_FreeSurfaceWater": 36.5,
+    "t_frag_gen_FreeSurfaceWater": 50,
     "biof_frag_factor": 2,
     "heter_frag_factor": 100,
     "emiss_dict_g_s": {
@@ -132,6 +132,5 @@
             "d": 0,
             "e": 0
         }
-    },
-    " shape": "fiber"
+    }
 }

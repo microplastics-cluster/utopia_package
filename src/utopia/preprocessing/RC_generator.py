@@ -7,7 +7,7 @@ from utopia.helpers import generate_fsd_matrix
 
 
 def discorporation(particle, model):
-    # Process by which the particle looses is corporeal ("particle") form (eq to degradation) though degradation into monomers and oligomers and other degradation products such as carboxylic acids. It is considered an elimination process in this model as UTOPIA only keeps track of the particulate material .
+    # Process by which the particle looses is corporeal ("particle") form (eq to degradation) though degradation into monomers and oligomers and other degradation products such as carboxylic acids. It is considered an elimination process in this model as UTOPIA eorks with the particulate material exclusively.
     # t_half_deg is provided as input in days and is converted to seconds. It refers to the degradation half-life of free MPs in the biggest size fraction and in the surface water compartments.
     # List of assumptions
     # The degradation rate of MPs is size, compartment and aggregation state dependent.
@@ -115,46 +115,6 @@ from utopia.preprocessing.rc_settling import *
 
 
 def settling(particle, model):
-    # settling calculations (TO BE REVISITED: different settling regimes depending on the size bin)
-
-    ### OLD VERSION to be changed by the below approach ###
-
-    # if "Freshwater" in particle.Pcompartment.Cname:
-    #     w_den_kg_m3 = density_w_21C_kg_m3
-    # else:
-    #     w_den_kg_m3 = density_seaWater_kg_m3
-
-    # settlingMethod = "Stokes"
-
-    # Settling occurs in all aquatic compartments which should be specified in the comprtment class
-    # if particle.Pcompartment.Cname in ["Sediment", "Agricultural Soil","Urban Soil"...]
-    #     k_set = 0
-
-    # if settlingMethod == "Stokes":
-    #     vSet_m_s = (
-    #         2
-    #         / 9
-    #         * (float(particle.Pdensity_kg_m3) - w_den_kg_m3)
-    #         / mu_w_21C_kg_ms
-    #         * g_m_s2
-    #         * (float(particle.radius_m)) ** 2
-    #     )
-    # else:
-    #     print("Error: cannot calculate settling other than Stokes yet")
-    #     # print error message settling methods other than Stokes
-    #     # (to be removed when other settling calculations are implemented)
-
-    # # for the water and surface water compartments:
-    # # settling and rising rate constants for free MP
-    # if vSet_m_s > 0:
-    #     k_set = vSet_m_s / float(particle.Pcompartment.Cdepth_m)
-
-    # elif vSet_m_s < 0:
-    #     k_set = 0
-
-    # else:
-    #     k_set = 0
-
     """settling can be calculated using different equations (e.g. Stokes,
     modified versions of it or others) now implemented through the rc_settling.py file
     """
@@ -169,11 +129,11 @@ def settling(particle, model):
     # settlingMethod = "Stokes"
 
     vSet_m_s = calculate_settling_velocity(
-        particle=particle, 
-        d_p=particle.diameter_m, 
+        particle=particle,
+        d_p=particle.diameter_m,
         rho_p=particle.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms,  # mu_w_21C_mPas,
         g=g_m_s2,
     )
 
@@ -186,55 +146,6 @@ def settling(particle, model):
 
 
 def rising(particle, model):
-    # rising calculations (TO BE REVISITED: also consider non-stokes regimes for smaller particles??)
-
-    ### OLD VERSION to be changed by the below approach ?###
-
-    # settlingMethod = "Stokes"
-
-    # Rising only occus in the lower water compartments wich for UTOPIA are: ["Ocean Mixed Water",
-    # "Ocean Column Water","Coast Column Water","Bulk FreshWater"]
-
-    # if particle.Pcompartment.Cname in [
-    #     "Ocean_Mixed_Water",
-    #     "Ocean_Column_Water",
-    #     "Coast_Column_Water",
-    #     "Bulk_Freshwater",
-    # ]:
-
-    #     if "Freshwater" in particle.Pcompartment.Cname:
-    #         w_den_kg_m3 = density_w_21C_kg_m3
-    #     else:
-    #         w_den_kg_m3 = density_seaWater_kg_m3
-
-    #     if settlingMethod == "Stokes":
-    #         vSet_m_s = (
-    #             2
-    #             / 9
-    #             * (float(particle.Pdensity_kg_m3) - w_den_kg_m3)
-    #             / mu_w_21C_kg_ms
-    #             * g_m_s2
-    #             * (float(particle.radius_m)) ** 2
-    #         )
-    #     else:
-    #         print("Error: cannot calculate settling other than Stokes yet")
-    #     # print error message settling methods other than Stokes
-    #     # (to be removed when other settling calculations are implemented)
-    # else:
-    #     vSet_m_s = 0
-    # # for the water and surface water compartments:
-    # # settling and rising rate constants for free MP
-    # if vSet_m_s > 0:
-    #     k_rise = 0
-
-    # elif vSet_m_s < 0:
-    #     k_rise = -vSet_m_s / float(particle.Pcompartment.Cdepth_m)
-
-    # else:
-    #     k_rise = 0
-
-    # Rising only occus in the lower water compartments wich for UTOPIA are: ["Ocean Mixed Water",
-    # "Ocean Column Water","Coast Column Water","Bulk FreshWater"]
 
     if particle.Pcompartment.Cname in [
         "Ocean_Mixed_Water",
@@ -249,11 +160,11 @@ def rising(particle, model):
             w_den_kg_m3 = density_seaWater_kg_m3
 
         vrise_m_s = calculate_settling_velocity(
-            particle=particle, 
+            particle=particle,
             d_p=particle.diameter_m,
             rho_p=particle.Pdensity_kg_m3,
             rho_f=w_den_kg_m3,
-            mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
+            mu=mu_w_21C_kg_ms,  # mu_w_21C_mPas,
             g=g_m_s2,
         )
 
@@ -314,20 +225,20 @@ def heteroaggregation(particle, model):
         w_den_kg_m3 = density_seaWater_kg_m3
 
     MP_vSet_m_s = calculate_settling_velocity(
-        particle=particle, 
+        particle=particle,
         d_p=particle.diameter_m,
         rho_p=particle.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms,  # mu_w_21C_mPas,
         g=g_m_s2,
     )
 
     SPM_vSet_m_s = calculate_settling_velocity(
-        particle=model.spm, 
+        particle=model.spm,
         d_p=model.spm.radius_m * 2,
         rho_p=model.spm.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms,  # mu_w_21C_mPas,
         g=g_m_s2,
     )
 
@@ -395,11 +306,11 @@ def heteroaggregate_breackup(particle, model):
         w_den_kg_m3 = density_seaWater_kg_m3
 
     MP_vSet_m_s = calculate_settling_velocity(
-        particle=particle, 
+        particle=particle,
         d_p=particle.diameter_m,
         rho_p=particle.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms,  # mu_w_21C_mPas,
         g=g_m_s2,
     )
 
@@ -408,7 +319,7 @@ def heteroaggregate_breackup(particle, model):
         d_p=model.spm.radius_m * 2,
         rho_p=model.spm.Pdensity_kg_m3,
         rho_f=w_den_kg_m3,
-        mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
+        mu=mu_w_21C_kg_ms,  # mu_w_21C_mPas,
         g=g_m_s2,
     )
 
@@ -588,7 +499,7 @@ def sediment_resuspension(particle, model):
     # When no depth parameter available assign transfer sediment to water rate taken from SimpleBox for Plastics model
     # Currently placeholder values. To be revisited
     resusp_dict = {
-        "Sediment_Freshwater": 1e-9, 
+        "Sediment_Freshwater": 1e-9,
         "Sediment_Coast": 1e-10,
         "Sediment_Ocean": 1e-11,
     }
@@ -602,66 +513,65 @@ def burial(particle, model):
     # Currenlty place holder values. To be revisited
 
     # When no depth parameter available assign burial rate taken from SimpleBox for Plastics model
-    
+
     # For burial in Sediment_Freshwater, we enforced the total settling mass equal to the sum of resuspension and burial mass,
     # which is referred to the Full Multi v3.0 parameterization
-    
+
     resusp_dict = {
         "Sediment_Freshwater": 1e-9,
         # "Sediment_Coast": 1e-10,
         # "Sediment_Ocean": 1e-11,
     }
-    
+
     sediment_to_water = {
         "Sediment_Freshwater": "Bulk_Freshwater",
         "Sediment_Coast": "Coast_Column_Water",
-        "Sediment_Ocean": "Ocean_Column_Water"
+        "Sediment_Ocean": "Ocean_Column_Water",
     }
-    
+
     # define the water density based on the compartment
     w_den_kg_m3 = density_seaWater_kg_m3
     if "Freshwater" in particle.Pcompartment.Cname:
         w_den_kg_m3 = density_w_21C_kg_m3
-    
+
     # calculate the settling velocity using the rc_settling module
     if particle.Pcompartment.Cname in resusp_dict:
 
         vSet_m_s = calculate_settling_velocity(
-            particle=particle, 
+            particle=particle,
             d_p=particle.diameter_m,
             rho_p=particle.Pdensity_kg_m3,
             rho_f=w_den_kg_m3,
-            mu=mu_w_21C_kg_ms, #mu_w_21C_mPas,
+            mu=mu_w_21C_kg_ms,  # mu_w_21C_mPas,
             g=g_m_s2,
         )
-        
+
         water_compartment_name = sediment_to_water[particle.Pcompartment.Cname]
-        
+
         if vSet_m_s > 0:
             k_set = vSet_m_s / float(model.dict_comp[water_compartment_name].Cdepth_m)
         else:
             k_set = 0
-        
+
         # extract the resuspension rate from the dictionary
         k_resusp = resusp_dict[particle.Pcompartment.Cname]
-        
+
         # calculate the burial rate constant
         k_burial = k_set - k_resusp
-        
+
         if k_burial < 0:
             k_burial = 0
-    
+
     elif particle.Pcompartment.Cname == "Sediment_Coast":
-        k_burial = 1e-9 # assign burial rate taken from SimpleBox for Plastics model
-    
+        k_burial = 1e-9  # assign burial rate taken from SimpleBox for Plastics model
+
     elif particle.Pcompartment.Cname == "Sediment_Ocean":
-        k_burial = 5e-10 # assign burial rate taken from SimpleBox for Plastics model
+        k_burial = 5e-10  # assign burial rate taken from SimpleBox for Plastics model
 
     else:
         k_burial = 0
 
     return k_burial
-
 
 
 def soil_air_resuspension(particle, model):
@@ -795,17 +705,17 @@ def dry_deposition(particle, model):
 
     if particle.Pshape == "sphere":
         d = particle.diameter_m
-    
+
     elif particle.Pshape == "fiber" or "fibre" or "cylinder":
         d = particle.diameter_m
-        #NOTE: 250722 XZ revised the equivalent diameter for fiber-shaped particles in particulate_classes.py
+        # NOTE: 250722 XZ revised the equivalent diameter for fiber-shaped particles in particulate_classes.py
         # d = (3 * particle.Pvolume_m3 / (4 * math.pi)) ** (1 / 3) * 2
-    
+
     rho = particle.Pdensity_kg_m3
     Rep = ReynoldsNumberFromStokes(d, rho)
 
     initial_Rep = ReynoldsNumberFromStokes(d, rho)
-    
+
     initial_Settling = kineticCstdrySettlingNewtonSphere(
         d, rho, Rep
     )  # Initial guess for settling velocity
